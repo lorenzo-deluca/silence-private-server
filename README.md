@@ -58,12 +58,13 @@ First, you need to determine your IMEI. \
 You can do this by going to the Silence app, selecting "My Vehicles", choosing your scooter, and then going to "Technical Sheet".
 
 ### Create Configuration File
-Next, copy the 'configuration.template.json' file and create a new file named 'configuration.json'. In this file, specify the following parameters:
-    - `IMEI`: Enter the IMEI of your Astra module, which you determined in the previous step.
-    - `ServerPort`: If you modified this in the module configuration, enter the new value. Otherwise, leave it as the default 38955.
-    - `bridgeMode`: If set to true, the server will still send data to the Silence server, allowing the Silence app to function normally. \
+Next, copy the '**configuration.template.json**' file and create a new file named '**configuration.json**'. \
+In this file, specify the following parameters:
+- `IMEI`: Enter the IMEI of your Astra module, which you determined in the previous step.
+- `ServerPort`: If you modified this in the module configuration, enter the new value. Otherwise, leave it as the default 38955.
+- `bridgeMode`: If set to true, the server will still send data to the Silence server, allowing the Silence app to function normally.
     If you do not want to send data to Silence (which will cause the app to stop working), set this to FALSE.
-    - `MQTT broker`: Configure **port**, **user**, **pass** of your local MQTT Broker.
+- `MQTT broker`: Configure **port**, **user**, **pass** of your local MQTT Broker.
 
 ## Running the Server
 Once you have configured your 'configuration.json' file, you can run the server. Here are the steps:
@@ -80,20 +81,20 @@ Once you have configured your 'configuration.json' file, you can run the server.
 
 ### Run as a Docker Container
 Alternatively, you can run the server as a Docker container. To do this, you need to build a Docker image and map the 'configuration.json' file.\
-Here's the command to build the Docker image:
-    ```shell
-    docker build -t silence-server .
-    ```
-And here's the command to run the Docker container, mapping the 'configuration.json' file:
-    ```shell
+Command to build the Docker image:
+  ```shell
+  docker build -t silence-private-server .
+  ```
+And here's the command to run the Docker container, mapping the '**configuration.json**' file:
+  ```shell
     docker run
     --name silence-server
     --detach --restart unless-stopped 
-    --publish **serverPORT**:**serverPORT** 
+    --publish **#PORT#**:**#PORT#** 
     --v **local_log_folder**:/app/logs:rw 
     --v **local_configuration.json**:/app/Configuration.json:r 
-    silence-server 
-    ```
+    silence-private-server 
+  ```
    
 ## License
 GNU AGPLv3 © [Lorenzo De Luca][https://lorenzodeluca.dev]
