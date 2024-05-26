@@ -20,7 +20,7 @@ If you like this project you can support us with :coffee: or simply put a :star:
 - [Astra Module Configuration](#astra-module-configuration)
 - [Installation](#installation)
 - [MQTT Integration](#mqtt-integration)
-- [Troubleshooting - FAQ](#troubleshooting-faq)
+- [Support](#support)
 
 ### Tested on Silence Scooters
 - [x] Silence S01 Connected
