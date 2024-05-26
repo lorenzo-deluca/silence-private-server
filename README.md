@@ -19,7 +19,7 @@ If you like this project you can support us with :coffee: or simply put a :star:
 - [How it works](#how-it-works)
 - [Astra Module Configuration](#astra-module-configuration)
 - [Installation](#installation)
-- [Home Assistant Integration](#home-assistant-integration)
+- [](#)
 - [Troubleshooting - FAQ](#troubleshooting-faq)
 
 ### Tested on Silence Scooters
@@ -42,8 +42,8 @@ It will also be possible to send commands to the scooter like Silence App: Power
 ### Astra Module Configuration
 To configure the Astra module, you need to follow these steps:
 
-1. **TX and RX Connection**: Connect the TX and RX pins as shown in the image below. (Insert image here)
-2. **Serial Connection**: Connect to the Astra module via RS232 serial port with connection parameters 115200 baud, 8, N, 1.
+1. **TX and RX Connection**: Connect the TX and RX pins as shown in the image below. ![Pinout](images/pinout.png) 
+2. **Serial Connection**: Connect to the Astra module via **RS232 serial port** with connection parameters **115200 baud, 8, N, 1**.
 3. **Terminal Commands**: Once connected, enter the following commands in the terminal:
     - `$IPAD1, #PUBLIC_IP#` , change **#PUBLIC_IP** with your IP or Dynamic DNS FQDN
     - Optionally, you can also set the port with `$PORT1,#PORT#`. By default, it is set to **38955** as Silence Server.
@@ -55,7 +55,8 @@ Once clone the project, you need to configure and running the server, follow the
 
 ### Determine Your IMEI
 First, you need to determine your IMEI. \
-You can do this by going to the Silence app, selecting "My Vehicles", choosing your scooter, and then going to "Technical Sheet".
+You can do this by going to the Silence app, selecting "My Vehicles", choosing your scooter, and then going to "**Technical Sheet**".
+<img src="images/SilenceApp-IMEI.png" alt="IMEI" height="400" />
 
 ### Create Configuration File
 Next, copy the '**configuration.template.json**' file and create a new file named '**configuration.json**'. \
