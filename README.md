@@ -19,7 +19,7 @@ If you like this project you can support us with :coffee: or simply put a :star:
 - [How it works](#how-it-works)
 - [Astra Module Configuration](#astra-module-configuration)
 - [Installation](#installation)
-- [](#)
+- [MQTT Integration](#mqtt-integration)
 - [Troubleshooting - FAQ](#troubleshooting-faq)
 
 ### Tested on Silence Scooters
@@ -92,10 +92,49 @@ And here's the command to run the Docker container, mapping the '**configuration
     --name silence-server
     --detach --restart unless-stopped 
     --publish **#PORT#**:**#PORT#** 
-    --v **local_log_folder**:/app/logs:rw 
-    --v **local_configuration.json**:/app/Configuration.json:r 
+    --v **local_configuration.json**:/app/configuration.json:ro 
     silence-private-server 
   ```
+
+Here's an example of logs of a running server in Docker, with script the output is the same.
+<img src="images/silence-server-docker.png" alt="IMEI" height="400" />
+
+## MQTT Integration
+After properly Module and Server configuration you have your own server and you will have your data locally.\
+There you can integrate with any MQTT-compatible system; we will soon publish a sample configuration for Home Assistant.  :)
+
+### Status Publishing
+Server publishes the scooter's status to an MQTT topic every time it receives a message from the scooter. The base topic is defined in the configuration file (TopicPrefix), and the status is published to a topic composed as follows: `TopicPrefix/IMEI/status`.
+The topic name definition is defined in file **scooter_status_definition.json**, but you can subscribe on status/# topic and see data.
+
+Here's a brief overview of how it works:
+
+1. **MQTT Publishing**: The server is set up to publish to an MQTT topic. MQTT is a lightweight messaging protocol for small sensors and mobile devices, optimized for high-latency or unreliable networks.
+2. **Topic Structure**: The MQTT topic to which the server publishes is composed of the base topic, **TopicPrefix** parameter, the IMEI of the scooter, and the word 'status'. \
+   So, if your TopicPrefix is 'MyScooter' and your IMEI is '123456789', the server would publish to the topic 'MyScooter/123456789/status'.
+
+### Sending Commands
+You can send commands to the scooter by publishing to an MQTT topic. The topic is composed of the base topic (TopicPrefix), the IMEI of the scooter, and the word 'command'. So, if your TopicPrefix is 'MyScooter' and your IMEI is '123456789', you would publish commands to the topic 'MyScooter/123456789/command'.
+
+Here are the possible commands you can send:
+
+- **TURN_ON_SCOOTER**: Turns on the scooter.
+- **TURN_OFF_SCOOTER**: Turns off the scooter.
+- **OPEN_SEAT**: Opens the seat of the scooter.
+- **FLASH**: Activates the scooter's flash.
+- **BEEP_FLASH**: Activates the scooter's beep and flash.
+- **STOP_FLASH**: Stops the scooter's flash.
+
+To send a command, simply publish a message, with an empty payload, to the appropriate MQTT topic. \
+For example, to turn on the scooter, you would publish 'TURN_ON_SCOOTER' to 'MyScooter/123456789/command'.
+
+## Support
+If you encounter any issues or have questions regarding the integration, please open an issue on this GitHub repository, and I will be happy to assist you.
+You can write to me at [me@lorenzodeluca.dev](mailto:me@lorenzodeluca.dev?subject=[GitHub]silence-private-server)
+
+## Contributing
+Contributions to the project are welcome! Please fork the repository, make your changes, and submit a pull request.
+Any help is welcome, if you have new implementations feel free to make pull requests :blush:
    
 ## License
 GNU AGPLv3 © [Lorenzo De Luca][https://lorenzodeluca.dev]
