@@ -1,0 +1,146 @@
+{
+    "status": {
+        "value": null,
+        "MQTT_topic": "status"
+    },
+    "movementAlarm": {
+        "value": null,
+        "MQTT_topic": "movementAlarm"
+    },
+    "batteryIn": {
+        "value": null,
+        "MQTT_topic": "batteryIn"
+    },
+    "astraBatterySOC": {
+        "value": null,
+        "MQTT_topic": "astraBatterySOC"
+    },
+    "latitude": {
+        "value": null,
+        "MQTT_topic": "latitude"
+    },
+    "longitude": {
+        "value": null,
+        "MQTT_topic": "longitude"
+    },
+    "batterySOC": {
+        "value": null,
+        "MQTT_topic": "SOCbatteria"
+
+    },
+    "batteryTempMax": {
+        "value": null,
+        "MQTT_topic": "BatteryTempMax"
+
+    },
+    "batteryTempMin": {
+        "value": null,
+        "MQTT_topic": "BatteryTempMin"
+    },
+    "batteryVoltage": {
+        "value": null,
+        "MQTT_topic": "VOLTbatteria"
+
+    },
+    "batteryCurrent": {
+        "value": null,
+        "MQTT_topic": "batteryCurrent"
+
+    },
+    "motorTemp": {
+        "value": null,
+        "MQTT_topic": "motorTemp"
+    },
+    "inverterTemp": {
+        "value": null,
+        "MQTT_topic": "inverterTemp"
+    },
+    "speed": {
+        "value": null,
+        "MQTT_topic": "speed"
+    },
+    "range": {
+        "value": null,
+        "MQTT_topic": "range"
+    },
+    "chargedEnergy": {
+        "value": null,
+        "MQTT_topic": "chargedEnergy"
+    },
+    "RegeneratedEnergy": {
+        "value": null,
+        "MQTT_topic": "RegeneratedEnergy"
+    },
+    "DischargedEnergy": {
+        "value": null,
+        "MQTT_topic": "DischargedEnergy"
+    },
+    "ambientTemp": {
+        "value": null,
+        "MQTT_topic": "ambientTemp"
+    },
+    "odo": {
+        "value": null,
+        "MQTT_topic": "odo"
+    },
+    "VIN": {
+        "value": null,
+        "MQTT_topic": "VIN"
+    },
+    "Cell1Voltage": {
+        "value": null,
+        "MQTT_topic": "Cell1Voltage"
+    },
+    "Cell2Voltage": {
+        "value": null,
+        "MQTT_topic": "Cell2Voltage"
+    },
+    "Cell3Voltage": {
+        "value": null,
+        "MQTT_topic": "Cell3Voltage"
+    },
+    "Cell4Voltage": {
+        "value": null,
+        "MQTT_topic": "Cell4Voltage"
+    },
+    "Cell5Voltage": {
+        "value": null,
+        "MQTT_topic": "Cell5Voltage"
+    },
+    "Cell6Voltage": {
+        "value": null,
+        "MQTT_topic": "Cell6Voltage"
+    },
+    "Cell7Voltage": {
+        "value": null,
+        "MQTT_topic": "Cell7Voltage"
+    },
+    "Cell8Voltage": {
+        "value": null,
+        "MQTT_topic": "Cell8Voltage"
+    },
+    "Cell9Voltage": {
+        "value": null,
+        "MQTT_topic": "Cell9Voltage"
+    },
+    "Cell10Voltage": {
+        "value": null,
+        "MQTT_topic": "Cell10Voltage"
+    },
+    "Cell11Voltage": {
+        "value": null,
+        "MQTT_topic": "Cell11Voltage"
+    },
+    "Cell12Voltage": {
+        "value": null,
+        "MQTT_topic": "Cell12Voltage"
+    },
+    "Cell13Voltage": {
+        "value": null,
+        "MQTT_topic": "Cell13Voltage"
+    },
+    "Cell14Voltage": {
+        "value": null,
+        "MQTT_topic": "Cell14Voltage"
+    }
+}

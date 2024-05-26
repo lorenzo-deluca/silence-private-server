@@ -1,0 +1,329 @@
+{
+    "status": {
+        "message_type": [
+            {
+                "message_first_char": 90,
+                "message_lenght": [94,200],
+                "message_byte_pos": [82,82]
+            },
+            {
+                "message_first_char": 90,
+                "message_lenght": [99],
+                "message_byte_pos": [87,87]
+            }
+        ],
+        "data_type": "numeric",
+        "divider": 1,
+        "disable_when_off": false
+    },
+    "movementAlarm": {
+        "message_type": [
+            {
+                "message_first_char": 90,
+                "message_lenght": [94,99,200],
+                "message_byte_pos": [15,15]
+            }
+        ],
+        "bit_pos": 7,
+        "data_type": "boolean",
+        "disable_when_off": false
+    },
+    "batteryIn": {
+        "message_type": [
+            {
+                "message_first_char": 90,
+                "message_lenght": [94,99,200],
+                "message_byte_pos": [21,21]
+            }
+        ],
+        "bit_pos": 2,
+        "data_type": "boolean",
+        "disable_when_off": false
+    },
+    "astraBatterySOC": {
+        "message_type": [
+            {
+                "message_first_char": 90,
+                "message_lenght": [94,99,200],
+                "message_byte_pos": [22,22]
+            }
+        ],
+        "data_type": "numeric",
+        "divider": 1,
+        "disable_when_off": false
+    },
+    "latitude": {
+        "message_type": [
+            {
+                "message_first_char": 90,
+                "message_lenght": [94,99,200],
+                "message_byte_pos": [27,30]
+            }
+        ],
+        "data_type": "numeric",
+        "divider": 1000000,
+        "disable_when_off": false
+    },
+    "longitude": {
+        "message_type": [
+            {
+                "message_first_char": 90,
+                "message_lenght": [94,99,200],
+                "message_byte_pos": [31,34]
+            }
+        ],
+        "data_type": "numeric",
+        "divider": 1000000,
+        "disable_when_off": false
+    },
+    "batterySOC": {
+        "message_type": [
+            {
+                "message_first_char": 90,
+                "message_lenght": [94,200],
+                "message_byte_pos": [46,46]
+            },
+            {
+                "message_first_char": 90,
+                "message_lenght": [99],
+                "message_byte_pos": [51,51]
+            }
+        ],
+        "data_type": "numeric",
+        "divider": 1,
+        "disable_when_off": false
+    },
+    "batteryTempMax": {
+        "message_type": [
+            {
+                "message_first_char": 90,
+                "message_lenght": [94,200],
+                "message_byte_pos": [47,47]
+            },
+            {
+                "message_first_char": 90,
+                "message_lenght": [99],
+                "message_byte_pos": [52,52]
+            }
+        ],
+        "data_type": "numeric",
+        "divider": 1,
+        "disable_when_off": false
+    },
+    "batteryTempMin": {
+        "message_type": [
+            {
+                "message_first_char": 90,
+                "message_lenght": [94,200],
+                "message_byte_pos": [48,48]
+            },
+            {
+                "message_first_char": 90,
+                "message_lenght": [99],
+                "message_byte_pos": [53,53]
+            }
+        ],
+        "data_type": "numeric",
+        "divider": 1,
+        "disable_when_off": false
+    },
+    "batteryVoltage": {
+        "message_type": [
+            {
+                "message_first_char": 90,
+                "message_lenght": [94,200],
+                "message_byte_pos": [49,50]
+            },
+            {
+                "message_first_char": 90,
+                "message_lenght": [99],
+                "message_byte_pos": [54,55]
+            }
+        ],
+        "data_type": "numeric",
+        "divider": 10,
+        "disable_when_off": false
+    },
+    "batteryCurrent": {
+        "message_type": [
+            {
+                "message_first_char": 90,
+                "message_lenght": [94,200],
+                "message_byte_pos": [51,52]
+            },
+            {
+                "message_first_char": 90,
+                "message_lenght": [99],
+                "message_byte_pos": [56,57]
+            }
+        ],
+        "data_type": "numeric",
+        "divider": 10,
+        "disable_when_off": false
+    },
+    "motorTemp": {
+        "message_type": [
+            {
+                "message_first_char": 90,
+                "message_lenght": [94,200],
+                "message_byte_pos": [59,60]
+            },
+            {
+                "message_first_char": 90,
+                "message_lenght": [99],
+                "message_byte_pos": [64,65]
+            }
+        ],
+        "data_type": "numeric",
+        "divider": 10,
+        "disable_when_off": true
+    },
+    "inverterTemp": {
+        "message_type": [
+            {
+                "message_first_char": 90,
+                "message_lenght": [94,200],
+                "message_byte_pos": [61,62]
+            },
+            {
+                "message_first_char": 90,
+                "message_lenght": [99],
+                "message_byte_pos": [66,67]
+            }
+        ],
+        "data_type": "numeric",
+        "divider": 10,
+        "disable_when_off": true
+    },
+    "speed": {
+        "message_type": [
+            {
+                "message_first_char": 90,
+                "message_lenght": [94,200],
+                "message_byte_pos": [63,63]
+            },
+            {
+                "message_first_char": 90,
+                "message_lenght": [99],
+                "message_byte_pos": [68,68]
+            }
+        ],
+        "data_type": "numeric",
+        "divider": 1,
+        "disable_when_off": true
+    },
+    "range": {
+        "message_type": [
+            {
+                "message_first_char": 90,
+                "message_lenght": [94,200],
+                "message_byte_pos": [64,64]
+            },
+            {
+                "message_first_char": 90,
+                "message_lenght": [99],
+                "message_byte_pos": [69,69]
+            }
+        ],
+        "data_type": "numeric",
+        "divider": 1,
+        "disable_when_off": false
+    },
+    "chargedEnergy": {
+        "message_type": [
+            {
+                "message_first_char": 90,
+                "message_lenght": [94,200],
+                "message_byte_pos": [69,72]
+            },
+            {
+                "message_first_char": 90,
+                "message_lenght": [99],
+                "message_byte_pos": [74,77]
+            }
+        ],
+        "data_type": "numeric",
+        "divider": 3600,
+        "disable_when_off": false
+    },
+    "RegeneratedEnergy": {
+        "message_type": [
+            {
+                "message_first_char": 90,
+                "message_lenght": [94,200],
+                "message_byte_pos": [73,76]
+            },
+            {
+                "message_first_char": 90,
+                "message_lenght": [99],
+                "message_byte_pos": [78,81]
+            }
+        ],
+        "data_type": "numeric",
+        "divider": 3600,
+        "disable_when_off": false
+    },
+    "DischargedEnergy": {
+        "message_type": [
+            {
+                "message_first_char": 90,
+                "message_lenght": [94,200],
+                "message_byte_pos": [77,80]
+            },
+            {
+                "message_first_char": 90,
+                "message_lenght": [99],
+                "message_byte_pos": [82,85]
+            }
+        ],
+        "data_type": "numeric",
+        "divider": 3600,
+        "disable_when_off": false
+    },
+    "ambientTemp": {
+        "message_type": [
+            {
+                "message_first_char": 90,
+                "message_lenght": [94,200],
+                "message_byte_pos": [81,81]
+            },
+            {
+                "message_first_char": 90,
+                "message_lenght": [99],
+                "message_byte_pos": [86,86]
+            }
+        ],
+        "data_type": "numeric",
+        "divider": 1,
+        "disable_when_off": true
+    },
+    "odo": {
+        "message_type": [
+            {
+                "message_first_char": 90,
+                "message_lenght": [94,200],
+                "message_byte_pos": [83,86]
+            },
+            {
+                "message_first_char": 90,
+                "message_lenght": [99],
+                "message_byte_pos": [88,91]
+            }
+        ],
+        "data_type": "numeric",
+        "divider": 1,
+        "disable_when_off": false
+    },
+    "VIN": {
+        "message_type": [
+            {
+                "message_first_char": 90,
+                "message_lenght": [200],
+                "message_byte_pos": [92,108]
+            }
+        ],
+        "data_type": "text",
+        "disable_when_off": false
+    }
+
+}

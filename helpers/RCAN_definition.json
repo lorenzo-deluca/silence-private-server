@@ -1,0 +1,58 @@
+{
+    "Cell1Voltage": {
+        "header": "$RCAN,185",
+        "message_byte_pos": [3, 4]
+    },
+    "Cell2Voltage": {
+        "header": "$RCAN,185",
+        "message_byte_pos": [5, 6]
+    },
+    "Cell3Voltage": {
+        "header": "$RCAN,185",
+        "message_byte_pos": [7, 8]
+    },
+    "Cell4Voltage": {
+        "header": "$RCAN,185",
+        "message_byte_pos": [9, 10]
+    },
+    "Cell5Voltage": {
+        "header": "$RCAN,186",
+        "message_byte_pos": [3, 4]
+    },
+    "Cell6Voltage": {
+        "header": "$RCAN,186",
+        "message_byte_pos": [5, 6]
+    },
+    "Cell7Voltage": {
+        "header": "$RCAN,186",
+        "message_byte_pos": [7, 8]
+    },
+    "Cell8Voltage": {
+        "header": "$RCAN,186",
+        "message_byte_pos": [9, 10]
+    },
+    "Cell9Voltage": {
+        "header": "$RCAN,187",
+        "message_byte_pos": [3, 4]
+    },
+    "Cell10Voltage": {
+        "header": "$RCAN,187",
+        "message_byte_pos": [5, 6]
+    },
+    "Cell11Voltage": {
+        "header": "$RCAN,187",
+        "message_byte_pos": [7, 8]
+    },
+    "Cell12Voltage": {
+        "header": "$RCAN,187",
+        "message_byte_pos": [9, 10]
+    },
+    "Cell13Voltage": {
+        "header": "$RCAN,188",
+        "message_byte_pos": [3, 4]
+    },
+    "Cell14Voltage": {
+        "header": "$RCAN,188",
+        "message_byte_pos": [5, 6]
+    }
+}
