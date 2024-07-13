@@ -70,7 +70,7 @@ class MessageParser:
                         byte_pos = self.RCAN_message_configuration[parameter]["message_byte_pos"]
                         positions = data.split(",")
                         combined_HEX = positions[byte_pos[1]] + positions[byte_pos[0]]
-                        self.parameters[parameter]["value"] = int(combined_HEX, 16)/1000
+                        self.parameters[parameter]["value"] = int(combined_HEX, 16)
 
                 log.debug(f"Message protocol astra parsed: {self.parameters}")            
                 pub.sendMessage(TOPIC_SCOOTER_STATUS, scooter_status = self.parameters)
