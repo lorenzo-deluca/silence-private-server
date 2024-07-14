@@ -21,7 +21,7 @@ If you like this project you can support us with :coffee: or simply put a :star:
 - [Installation](#installation)
 - [MQTT Integration](#mqtt-integration)
 - [Home Assistant Integration](#home-assistant-integration)
-- [FAQ] (#FAQ)
+- [FAQ](#faq)
 - [Support](#support)
 - [Contributing](#contributing)
 
@@ -292,11 +292,11 @@ cards:
 
 ## FAQ
 1. **What cable are you using? Any reference would be appreciated!**
-- Is a null-modem RS232 cable, with a cheap RS232-USB adapter you just need to connect TX/RX and GND and open a serial terminal on your PC.
+Is a **null-modem RS232** cable, with a cheap **RS232-USB** adapter you just need to connect TX/RX and GND and open a serial terminal on your PC.
 
 2. **Do you have any information on how to obtain the IMEI of the SEAT-MO? The app doesn't seem to provide it.**
-- If you don't find IMEI no worry, at the first connection from Scooter to Server you see IMEI on server logs.
-  Anyway on the serial terminal you see IMEI too.
+If you don't find IMEI no worry, at the first connection from Scooter to Server you see IMEI on server logs.
+Anyway on the serial terminal you see IMEI too.
 
 3. **Is there a way to back up the previous parameters (IP/Port) before reprogramming the Astra module's IP?**
 Original parameters (for my Silence, but some users confirm also for Seat) are
