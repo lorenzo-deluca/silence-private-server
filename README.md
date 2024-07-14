@@ -63,16 +63,17 @@ Please note that you need to replace `#PUBLIC_IP#` and `#PORT#` with your actual
 ## Installation
 Once clone the project, you need to configure and running the server, follow these steps:
 
-### Determine Your IMEI
+### Find Your IMEI
 First, you need to determine your IMEI. \
 You can do this by going to the Silence app, selecting "My Vehicles", choosing your scooter, and then going to "**Technical Sheet**". \
 <img src="images/SilenceApp-IMEI.png" alt="IMEI" height="400" />
 
-If you cannot find your IMEI there is no problem, when you install the server and the scooter attempts to connect to the server you will see the IMEI in the server logs.
+If you cannot find your IMEI there is **no problem**, \
+when you install the server and the scooter attempts to connect to the server you will see the IMEI in the server logs.
 
 ### Create Configuration File
 Next, copy the '**configuration.template.json**' file and create a new file named '**configuration.json**'. \
-In this file, specify the following parameters:
+In this file, specify the following parameters: \
 - `IMEI`: Enter the IMEI of your Astra module, which you determined in the previous step.
 - `ServerPort`: If you modified this in the module configuration, enter the new value. Otherwise, leave it as the default 38955.
 - `bridgeMode`: If set to true, the server will still send data to the Silence server, allowing the Silence app to function normally.
@@ -80,7 +81,7 @@ In this file, specify the following parameters:
 - `MQTT broker`: Configure **port**, **user**, **pass** of your local MQTT Broker.
 
 ## Running the Server
-Once you have configured your 'configuration.json' file, you can run the server. Here are the steps:
+Once you have configured your '**configuration.json**'file, you can run the server. Here are the steps:
 
 ### Running as Script
 1. **Install Python Libraries**: First, install the necessary Python libraries by running the following command in your terminal:
@@ -93,7 +94,7 @@ Once you have configured your 'configuration.json' file, you can run the server.
     ```
 
 ### Run as a Docker Container
-Alternatively, you can run the server as a Docker container. To do this, you need to build a Docker image and map the 'configuration.json' file.\
+Alternatively, you can run the server as a Docker container. To do this, you need to build a Docker image and map the '**configuration.json**' file.\
 Command to build the Docker image:
   ```shell
   docker build -t silence-private-server .
@@ -105,10 +106,21 @@ And here's the command to run the Docker container, mapping the '**configuration
     --detach --restart unless-stopped 
     --publish **#PORT#**:**#PORT#** 
     --v **local_configuration.json**:/app/configuration.json:ro 
-    silence-private-server 
+    silence-private-server
   ```
 
-Here's an example of logs of a running server in Docker, with script the output is the same.
+#### Run as Docker without build
+If you prefer, you can use the image I have already created of this project.
+ ```shell
+    docker run
+    --name silence-server
+    --detach --restart unless-stopped
+    --publish **#PORT#**:**#PORT#**
+    --v **local_configuration.json**:/app/configuration.json:ro
+    lorenzodleuca/silence-server:latest    
+  ```
+
+Here's an example of logs of a running server in Docker, with script the output should be more or less the same.
 <img src="images/silence-server-docker.png" alt="IMEI" height="400" />
 
 ## MQTT Integration
@@ -120,13 +132,15 @@ Server publishes the scooter's status to an MQTT topic every time it receives a 
 The topic name definition is defined in file **scooter_status_definition.json**, but you can subscribe on status/# topic and see data.
 
 Here's a brief overview of how it works:
-
-1. **MQTT Publishing**: The server is set up to publish to an MQTT topic. MQTT is a lightweight messaging protocol for small sensors and mobile devices, optimized for high-latency or unreliable networks.
-2. **Topic Structure**: The MQTT topic to which the server publishes is composed of the base topic, **TopicPrefix** parameter, the IMEI of the scooter, and the word 'status'. \
-   So, if your TopicPrefix is 'MyScooter' and your IMEI is '123456789', the server would publish to the topic 'MyScooter/123456789/status'.
+- **MQTT Publishing**: The server is set up to publish to an MQTT topic. MQTT is a lightweight messaging protocol for small sensors and mobile devices, optimized for high-latency or unreliable networks. \
+- **Topic Structure**: The MQTT topic to which the server publishes is composed of the base topic, **TopicPrefix** parameter, the **IMEI** of the scooter, and the word 'status'. \
+So, if your **TopicPrefix** is `MyScooter` and your **IMEI** is `123456789`, \ 
+the server would **publish status** to the MQTT topic `MyScooter/123456789/status`.
 
 ### Sending Commands
-You can send commands to the scooter by publishing to an MQTT topic. The topic is composed of the base topic (TopicPrefix), the IMEI of the scooter, and the word 'command'. So, if your TopicPrefix is 'MyScooter' and your IMEI is '123456789', you would publish commands to the topic 'MyScooter/123456789/command'.
+You can send commands to the scooter by publishing to an MQTT topic. The topic is composed of the base topic (TopicPrefix), the IMEI of the scooter, and the word 'command'. \ 
+So, if your **TopicPrefix** is `MyScooter` and your **IMEI** is `123456789`, \ 
+you would **publish commands** to the MQTT topic `MyScooter/123456789/command`.
 
 Here are the possible commands you can send:
 
@@ -138,18 +152,18 @@ Here are the possible commands you can send:
 - **STOP_FLASH**: Stops the scooter's flash.
 
 To send a command, simply publish a message, with an empty payload, to the appropriate MQTT topic. \
-For example, to turn on the scooter, you would publish 'TURN_ON_SCOOTER' to 'MyScooter/123456789/command'.
+For example, to turn on the scooter, you would publish `TURN_ON_SCOOTER` to topic `MyScooter/123456789/command`.
 
 ## Home Assistant Integration
-Once you have everything set up and see the data on MQTT the integration with **Home Assistant** is quite simple if you are familiar with Home Assistant.
-In the file **packages/scooter_package.yaml** I leave you an example of configuration for data integration.
-You will obviously have to modify ***'YOUR_SCOOTER_IMEI'** with your **IMEI** obtained in the previous steps.
+Once you have everything set up and see the data on MQTT the integration with **Home Assistant** is quite simple if you are familiar with Home Assistant. \
+In the file `**packages/scooter_package.yaml**` I leave you an example of configuration for data integration. \
+You will obviously have to modify **YOUR_SCOOTER_IMEI** with your **IMEI** obtained in the previous steps.
 
-Once this is done, if everything works, you should display the data on Home Assistant as in my case.
+Once this is done, if everything works, you should display the data on Home Assistant as in my case. \
 ![HA_DeviceDatas](images/HA_DeviceDatas.jpg)
 
 ### Lovelace
-You can create various tabs like these.
+You can create various tabs like these. \
 ![HA_Lovelace1](images/HA_Lovelace1.png)
 ![HA_Lovelace2](images/HA_Lovelace2.png)
 
@@ -291,24 +305,24 @@ cards:
 ```
 
 ## FAQ
-1. **What cable are you using? Any reference would be appreciated!**
+1. **What cable are you using? Any reference would be appreciated!** \
 Is a **null-modem RS232** cable, with a cheap **RS232-USB** adapter you just need to connect TX/RX and GND and open a serial terminal on your PC.
 
-2. **Do you have any information on how to obtain the IMEI of the SEAT-MO? The app doesn't seem to provide it.**
+2. **Do you have any information on how to obtain the IMEI of the SEAT-MO? The app doesn't seem to provide it.** \
 If you don't find IMEI no worry, at the first connection from Scooter to Server you see IMEI on server logs.
 Anyway on the serial terminal you see IMEI too.
 
-3. **Is there a way to back up the previous parameters (IP/Port) before reprogramming the Astra module's IP?**
-Original parameters (for my Silence, but some users confirm also for Seat) are
-SERVER: ***api.connectivity.silence.eco***
-PORT ***38955***
+3. **Is there a way to back up the previous parameters (IP/Port) before reprogramming the Astra module's IP?** \
+Original parameters (for my Silence, but some users confirm also for Seat) are \
+`SERVER` ***api.connectivity.silence.eco***
+`PORT` ***38955***
 
 ## Support
-If you encounter any issues or have questions regarding the integration, please open an issue on this GitHub repository, and I will be happy to assist you.
+If you encounter any issues or have questions regarding the integration, please open an issue on this GitHub repository, and I will be happy to assist you. \
 You can write to me at [me@lorenzodeluca.dev](mailto:me@lorenzodeluca.dev?subject=[GitHub]silence-private-server)
 
 ## Contributing
-Contributions to the project are welcome! Please fork the repository, make your changes, and submit a pull request.
+Contributions to the project are welcome! Please fork the repository, make your changes, and submit a pull request. \
 Any help is welcome, if you have new implementations feel free to make pull requests :blush:
    
 ## License
