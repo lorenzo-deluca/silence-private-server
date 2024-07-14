@@ -290,7 +290,6 @@ cards:
             name: Battery
 ```
 ## FAQ
-
 ### What cable are you using? Any reference would be appreciated!
 Is a null-modem RS232 cable, with a cheap RS232-USB adapter you just need to connect TX/RX and GND and open a serial terminal on your PC.
 
