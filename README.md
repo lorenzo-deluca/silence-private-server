@@ -44,10 +44,10 @@ It will also be possible to send commands to the scooter like Silence App: Power
 
 ### Astra Module Configuration
 To configure the Astra module, a **serial connection** to the module is required.
-The serial interface is easily connected via the **ODB port in the under seat**.
+The serial interface is easily connected via the **ODB port in the under seat**. \
 <img src="images/Silence_UnderSeat.jpg" alt="IMEI" height="350" />
 
-The pinout of the ODB port is as follows.
+The pinout of the ODB port is as follows. \
 ![Pinout ODB](images/SilenceSeatOBD.png)
 
 To configure the Astra module, you need to follow these steps:
@@ -65,7 +65,7 @@ Once clone the project, you need to configure and running the server, follow the
 
 ### Determine Your IMEI
 First, you need to determine your IMEI. \
-You can do this by going to the Silence app, selecting "My Vehicles", choosing your scooter, and then going to "**Technical Sheet**".
+You can do this by going to the Silence app, selecting "My Vehicles", choosing your scooter, and then going to "**Technical Sheet**". \
 <img src="images/SilenceApp-IMEI.png" alt="IMEI" height="400" />
 
 If you cannot find your IMEI there is no problem, when you install the server and the scooter attempts to connect to the server you will see the IMEI in the server logs.
