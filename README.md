@@ -20,6 +20,7 @@ If you like this project you can support us with :coffee: or simply put a :star:
 - [Astra Module Configuration](#astra-module-configuration)
 - [Installation](#installation)
 - [MQTT Integration](#mqtt-integration)
+- [Home Assistant Integration](#home-assistant-integration)
 - [Support](#support)
 
 ### Tested on Silence Scooters
@@ -127,6 +128,156 @@ Here are the possible commands you can send:
 
 To send a command, simply publish a message, with an empty payload, to the appropriate MQTT topic. \
 For example, to turn on the scooter, you would publish 'TURN_ON_SCOOTER' to 'MyScooter/123456789/command'.
+
+## Home Assistant Integration
+Once you have everything set up and see the data on MQTT the integration with **Home Assistant** is quite simple if you are familiar with Home Assistant.
+In the file **packages/scooter_package.yaml** I leave you an example of configuration for data integration.
+You will obviously have to modify ***'YOUR_SCOOTER_IMEI'** with your **IMEI** obtained in the previous steps.
+
+Once this is done, if everything works, you should display the data on Home Assistant as in my case.
+![HA_DeviceDatas](images/HA_DeviceDatas.jpg)
+
+### Lovelace
+You can create various tabs like these.
+![HA_Lovelace1](images/HA_Lovelace1.png)
+![HA_Lovelace2](images/HA_Lovelace2.png)
+
+Here is the YAML code, you need some HACS Frontend integration installed
+- [x] `vertical-stack-in-card`
+- [x] `custom:mini-graph-card`
+
+```YAML
+type: custom:vertical-stack-in-card
+cards:
+  - type: picture
+    image: local/dark_logo.png
+  - type: custom:bar-card
+    height: 35px
+    entities:
+      - entity: sensor.silence_batterysoc
+        name: Battery SoC
+  - type: horizontal-stack
+    cards:
+      - type: button
+        name: 'OFF'
+        entity: button.silence_scooter_device_command_off
+        tap_action:
+          action: toggle
+      - type: button
+        name: OPEN SEAT
+        icon: mdi:seat-passenger
+        entity: button.silence_scooter_device_command_open_seat
+        tap_action:
+          action: toggle
+      - type: button
+        entity: button.silence_scooter_device_silence_on
+        name: 'ON'
+        icon: mdi:scooter
+        tap_action:
+          action: toggle
+      - type: button
+        entity: button.silence_scooter_device_command_flash
+        name: FLASH
+        icon: mdi:flash-outline
+        tap_action:
+          action: toggle
+      - type: button
+        entity: button.silence_scooter_device_command_beep_flash
+        name: BEEP FLASH
+        icon: mdi:air-horn
+        tap_action:
+          action: toggle
+  - type: entities
+    entities:
+      - entity: sensor.silence_status
+        name: Status
+      - entity: sensor.odo
+        name: Odometer
+      - entity: sensor.silence_range
+        name: Range
+      - entity: sensor.silence_velocity
+        name: Speed
+      - entity: sensor.silence_lastreporttime
+        name: Last Update
+  - type: glance
+    title: Scooter
+    entities:
+      - entity: sensor.silence_name
+        name: Name
+      - entity: sensor.silence_color
+        name: Color
+      - entity: sensor.silence_model
+        name: Model
+      - entity: sensor.silence_manufacturedate
+        name: Manufacture
+      - entity: sensor.silence_frameno
+        name: Frame
+      - entity: sensor.silence_imei
+        name: IMEI
+      - entity: sensor.silence_alarmactivated
+        name: Alarm
+      - entity: sensor.silence_batteryout
+        name: Battery Out
+      - entity: sensor.silence_charging
+        name: In Charging
+    show_icon: false
+  - type: map
+    entities:
+      - entity: device_tracker.silence_scooter_tracker
+    dark_mode: true
+    hours_to_show: 48
+  - type: horizontal-stack
+    title: Temperatures
+    cards:
+      - type: custom:mini-graph-card
+        hours_to_show: 24
+        points_per_hour: 10
+        entities:
+          - entity: sensor.silence_motortemperature
+            name: Motor
+          - entity: sensor.silence_invertertemperature
+            name: Inverter
+          - entity: sensor.silence_batterytemperature
+            name: Battery
+  - type: vertical-stack
+    title: Voltages
+    cards:
+      - type: history-graph
+        title: Cells
+        entities:
+          - entity: sensor.silence_cell1voltage
+            name: Cell1
+          - entity: sensor.silence_cell2voltage
+            name: Cell2
+          - entity: sensor.silence_cell3voltage
+            name: Cell3
+          - entity: sensor.silence_cell4voltage
+            name: Cell4
+          - entity: sensor.silence_cell5voltage
+            name: Cell5
+          - entity: sensor.silence_cell6voltage
+            name: Cell6
+          - entity: sensor.silence_cell7voltage
+            name: Cell7
+          - entity: sensor.silence_cell8voltage
+            name: Cell8
+          - entity: sensor.silence_cell9voltage
+            name: Cell9
+          - entity: sensor.silence_cell10voltage
+            name: Cell10
+          - entity: sensor.silence_cell11voltage
+            name: Cell11
+          - entity: sensor.silence_cell12voltage
+            name: Cell12
+          - entity: sensor.silence_cell13voltage
+            name: Cell13
+          - entity: sensor.silence_cell14voltage
+            name: Cell14
+      - type: history-graph
+        entities:
+          - entity: sensor.silence_voltbatteria
+            name: Battery
+```
 
 ## Support
 If you encounter any issues or have questions regarding the integration, please open an issue on this GitHub repository, and I will be happy to assist you.
