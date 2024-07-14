@@ -41,9 +41,16 @@ Once the Scooter is interfaced with your private server, it **periodically conne
 It will also be possible to send commands to the scooter like Silence App: Power On, Power Off, Open Seat, Blink Lights and Horn
 
 ### Astra Module Configuration
+To configure the Astra module, a **serial connection** to the module is required.
+The serial interface is easily connected via the **ODB port in the under seat**.
+<img src="images/Silence_UnderSeat.jpg" alt="IMEI" height="350" />
+
+The pinout of the ODB port is as follows.
+![Pinout ODB](images/SilenceSeatOBD.png)
+
 To configure the Astra module, you need to follow these steps:
 
-1. **TX and RX Connection**: Connect the TX and RX pins as shown in the image below. ![Pinout](images/pinout.png) 
+1. **TX and RX Connection**: Connect the TX and RX pins as shown in the image below. ![Pinout RS232](images/pinout.png) 
 2. **Serial Connection**: Connect to the Astra module via **RS232 serial port** with connection parameters **115200 baud, 8, N, 1**.
 3. **Terminal Commands**: Once connected, enter the following commands in the terminal:
     - `$IPAD1, #PUBLIC_IP#` , change **#PUBLIC_IP** with your IP or Dynamic DNS FQDN
@@ -58,6 +65,8 @@ Once clone the project, you need to configure and running the server, follow the
 First, you need to determine your IMEI. \
 You can do this by going to the Silence app, selecting "My Vehicles", choosing your scooter, and then going to "**Technical Sheet**".
 <img src="images/SilenceApp-IMEI.png" alt="IMEI" height="400" />
+
+If you cannot find your IMEI there is no problem, when you install the server and the scooter attempts to connect to the server you will see the IMEI in the server logs.
 
 ### Create Configuration File
 Next, copy the '**configuration.template.json**' file and create a new file named '**configuration.json**'. \
