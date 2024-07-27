@@ -11,7 +11,7 @@
         "BMScellVoltage_pooling_interval": 600 
     },
     "Logging":{
-        "LogToFile": true,
+        "LogToFile": false,
         "LogLevel": 50
     },
     "MQTT": {
