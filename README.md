@@ -27,7 +27,8 @@ If you like this project you can support us with :coffee: or simply put a :star:
 
 ### Tested on Silence Scooters
 - [x] Silence S01 Connected
-- [ ] Testing ongoin on **Seat Mò** and **Silence S01+**
+- [x] Silence S01+
+- [ ] Testing ongoin on **Seat Mò**
 
 ## How It Works
 **SilencePrivateServer** acts as a replacement for the Silence/Seat Cloud Server.\
