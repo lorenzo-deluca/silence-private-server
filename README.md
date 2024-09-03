@@ -119,7 +119,7 @@ If you prefer, you can use the image I have already created of this project.
     --detach --restart unless-stopped
     --publish **#PORT#**:**#PORT#**
     --v **local_configuration.json**:/app/configuration.json:ro
-    lorenzodleuca/silence-server:latest    
+    lorenzodeluca/silence-server:latest    
   ```
 
 Here's an example of logs of a running server in Docker, with script the output should be more or less the same.
