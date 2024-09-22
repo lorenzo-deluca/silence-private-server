@@ -1,13 +1,31 @@
 import os
+import pytz
 import logging
 import logging.handlers
 from helpers.constants import LOGGER_NAME
+from datetime import datetime
 
 def setup_logger(configuration):
 
     logger = logging.getLogger(LOGGER_NAME)
     logger.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - [%(module)s] - %(levelname)s - %(message)s')
+
+   # Define a custom time formatter that considers the given timezone
+    class TimezoneFormatter(logging.Formatter):
+        def __init__(self, fmt=None, datefmt=None, tz=None):
+            super().__init__(fmt, datefmt)
+            self.tz = tz
+
+        def formatTime(self, record, datefmt=None):
+            dt = datetime.fromtimestamp(record.created, self.tz)
+            formatted_time = dt.strftime('%Y-%m-%d %H:%M:%S.%f')
+            formatted_time = formatted_time[:-3]
+            timezone_abbr = dt.tzname()
+            return f"{formatted_time} {timezone_abbr}"
+
+    # Get the timezone object
+    timezone_obj = pytz.timezone(configuration["Timezone"])
+    formatter = TimezoneFormatter('%(asctime)s - [%(module)s] - %(levelname)s - %(message)s', tz=timezone_obj)
 
     # logging to file
     if (configuration["LogToFile"]):
