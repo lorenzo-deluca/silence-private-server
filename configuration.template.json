@@ -15,7 +15,8 @@
     },
     "Logging":{
         "LogToFile": false,
-        "LogLevel": 50
+        "LogLevel": 20,
+        "Timezone": "Europe/Berlin"
     },
     "MQTT": {
         "Enabled" : true,
