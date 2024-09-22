@@ -12,13 +12,13 @@ def start_services_for_imei(configuration, imei, index, logger):
     """Start Silence Server and MQTT Service for a given IMEI number."""
     logger.info(f"Logger configured for IMEI: {imei}")
 
-    # Verwende BasePort und erzeuge eindeutige Ports für jede IMEI
+    # Use BasePort and create unique ports for each IMEI
     port = configuration["TCPServer"]["BasePort"] + index
     logger.info(f"Using port {port} for IMEI: {imei}")
 
-    # Start Silence Server mit dem individuellen Port
+    # Start Silence Server with individual port
     server_config = configuration["TCPServer"].copy()
-    server_config["serverPORT"] = port  # Fügt serverPORT hinzu
+    server_config["serverPORT"] = port  # adding serverPORT
 
     server = SilenceServerService(server_config, imei)
     server.start()
