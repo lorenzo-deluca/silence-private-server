@@ -1,16 +1,20 @@
 # Silence Private Server for Astra GPS Module
+[![](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/lorenzo-deluca)
+[![buy me a coffee](https://img.shields.io/badge/support-buymeacoffee-222222.svg?style=flat-square)](https://www.buymeacoffee.com/lorenzodeluca)
+
 This is a self-hosted server solution for interfacing with the Astra GPS module of Silence and Seat electric scooters.\
 This project empowers owners to maintain control over their data, ensuring **privacy** and **independence** from the manufacturer.
 
 This project was developed initially and primarily by [**Andrea Gasparini**](https://www.linkedin.com/in/andrea-gasparini-a14824143) @88gaspa88 (88gaspa88@gmail.com).\
 We also thank the technical contributions on the [Elektroroller forum](https://www.elektroroller-forum.de/viewforum.php?f=128)
 
-If you like this project you can support us with :coffee: or simply put a :star: to this repository :blush:
+If you like this project you can support me with :coffee: , with **GitHub Sponsor** or simply put a :star: to this repository :blush:
+
+[![](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/lorenzo-deluca)
 <a href="https://www.buymeacoffee.com/lorenzodeluca" target="_blank">
   <img src="https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png" alt="Buy Me A Coffee" width="150px">
 </a>
 
-[![buy me a coffee](https://img.shields.io/badge/support-buymeacoffee-222222.svg?style=flat-square)](https://www.buymeacoffee.com/lorenzodeluca)
 > **Warning**
 > :warning: This software was developed by analyzing frames from/to Silence Servers, it was not sponsored or officially supported by **Silence** or **Seat**
 > If someone from **Silence** or **Seat** would like to contribute or collaborate please contact me at [me@lorenzodeluca.dev](mailto:me@lorenzodeluca.dev?subject=[GitHub]Silence-Private-Server)
