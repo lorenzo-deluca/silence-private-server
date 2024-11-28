@@ -19,30 +19,31 @@ class SilenceServerService(threading.Thread):
     def __init__(self, configuration, IMEI):
         super().__init__()
 
-        log.info("Starting SilenceServerService")
+        self.IMEI = IMEI
+
+        log.info(f"Starting SilenceServerService for IMEI: {self.IMEI}")
 
         self._stop_event = threading.Event()
 
-        self.IMEI = IMEI
         self.serverPORT = configuration["serverPORT"]
         self.silenceHOST = configuration["silenceHOST"]
         self.silencePORT = configuration["silencePORT"]
         self.bridgeMode = configuration["bridgeMode"]
 
-        self.keepAliveInterval = configuration["keepAliveInterval"]       
+        self.keepAliveInterval = configuration["keepAliveInterval"]
         self.connectionCount = 0
         self.ACKresponse = b'\x06'
 
         self.BMScellVoltage_pooling_interval = configuration["BMScellVoltage_pooling_interval"]
 
         self.parser = MessageParser()
-        
+
         if configuration["SaveToDB"]:
-            log.info("Starting DBService")
-            self.dbService = DBService()
+            log.info(f"Starting DBService for IMEI: {self.IMEI}")
+            self.dbService = DBService(configuration, IMEI)
             self.dbService.start()
 
-        self.commandService = CommandService()
+        self.commandService = CommandService(configuration, IMEI)
         self.commandService.start()
 
     def stop(self):
@@ -50,13 +51,13 @@ class SilenceServerService(threading.Thread):
 
         if self.dbService:
             self.dbService.stop()
-            
+
     def run(self):
 
         def listenerClient(scooterSocket):
 
             try:
-                #FATTA CONNESSIONE VERIFICO IL LOGIN
+                # Once connected verify the login
                 if self.bridgeMode:
                     silenceClientSocket = socket.socket()
 
@@ -64,31 +65,31 @@ class SilenceServerService(threading.Thread):
 
                 if crashedFlag == 1 or len(messages) == 0:
                     raise Exception("crashed socket 1")
-           
+
                 retrievedIMEI = ""
                 for message in messages:
                     data = message["data"]
-                    protocol = message["protocol"] 
+                    protocol = message["protocol"]
                     if protocol == "Astra":
                         decodedData = data.decode()
                         retrievedIMEI = decodedData.split(";")
                         retrievedIMEI = retrievedIMEI[2]
                         log.info ("retrieved IMEI: " + retrievedIMEI)
 
-                #verifico IMEI corretto
+                # Verify if IMEI is correct
                 if retrievedIMEI == self.IMEI:
                     self.connectionCount = self.connectionCount +1
                     if self.bridgeMode:
-                        log.info("bridge mode, try to connect to Silence server")
-                        silenceClientSocket.connect((self.silenceHOST, self.silencePORT))  # provo a connettermi al server silence.
-                        log.info("connected to silence")
+                        log.info("We're in bridge mode, trying to connect to Silence Server")
+                        silenceClientSocket.connect((self.silenceHOST, self.silencePORT))  # Trying to connect to Silence Servers.
+                        log.info("Connected to Silence Server")
 
                         for message in messages:
                             data = message["data"]
                             protocol = message["protocol"]
                             silenceClientSocket.send(data)
                         dataFromSilence,crashedFlag = self._telegramReceiver(silenceClientSocket, 10, 0.2, "S")
-                
+
                         if crashedFlag == 1:
                             raise Exception("crashed socket")
 
@@ -96,7 +97,7 @@ class SilenceServerService(threading.Thread):
                             for message in dataFromSilence:
                                 data = message["data"]
                                 protocol = message["protocol"]
-                                scooterSocket.send(data)    #giro messaggio allo scooter
+                                scooterSocket.send(data)    # Sending message to scooter
                                 log.info("login correct sending ack")
                         else:
                             raise Exception("silence didn't confirm login, closing")
@@ -104,11 +105,11 @@ class SilenceServerService(threading.Thread):
                     else:
                         scooterSocket.send(self.ACKresponse)
 
-                else:           #se imei errato creo eccezione e chiudo tutto
+                else:           # If IMEI is wrong throw an exception and close everything
                     log.error("no my IMEI")
                     raise Exception("Wrong login")
 
-                #wait for old socket to close.
+                # Wait for old socket to close
                 wait_counter = 0
                 while self.connectionCount > 1:
                     wait_counter += 1
@@ -118,8 +119,8 @@ class SilenceServerService(threading.Thread):
 
                 last_keep_alive_sent = time.time()
                 last_BMS_pooling_time = 0
-                while 1:    #ciclo comunicazione con Scooter
-                    #vedo se lo scooter ha dati da inviare
+                while 1:    # Communication loop with scooter
+                    # See in scooter has data to send
                     messages,crashedFlag = self._telegramReceiver(scooterSocket, 0.2, 0.2, "A", True)
                     if crashedFlag == 1:
                         log.error("crash socket on communication from scooter")
@@ -135,14 +136,14 @@ class SilenceServerService(threading.Thread):
                                 self.parser.parse_message_from_scooter_protocol_astra(data)
                             if self.bridgeMode and len(data) > 1:   #hide response ack to silence
                                 silenceClientSocket.send(data)
-                                log.info("sent to silence")   
+                                log.info("sent to silence")
                             elif len(data) > 1:     #also don't send an ACK in response to an ACK
                                 scooterSocket.send(self.ACKresponse)
                                 log.info("sent ack to scooter")
                     #else:
                     #    log.info("No data from Scooter")
 
-                    # vedo se ho comandi da inviare allo scooter
+                    # Checking if we have any command to send to the scooter
                     while(self.commandService.commands_to_execute()):
                         command = self.commandService.get_next_command()
                         log.info(f"command to execute: {command.Code}")
@@ -155,7 +156,7 @@ class SilenceServerService(threading.Thread):
                             log.error(f"Command {command.Code} execution failed: {e}")
                             self.commandService.command_failed(command)
                             continue
-                    
+
                     if self.BMScellVoltage_pooling_interval > 0 and time.time() - last_BMS_pooling_time > self.BMScellVoltage_pooling_interval and not self.parser.scooter_off:
                         scooterSocket.send("$RCAN,185".encode())
                         scooterSocket.send("$RCAN,186".encode())
@@ -165,20 +166,20 @@ class SilenceServerService(threading.Thread):
 
                     if self.keepAliveInterval > 0 and time.time() - last_keep_alive_sent > self.keepAliveInterval:
                         scooterSocket.send(self.ACKresponse)
-                        log.info("sent ack to scooter") 
-                        last_keep_alive_sent = time.time()                       
+                        log.info("Keep-Alive: Sent ACK to scooter")
+                        last_keep_alive_sent = time.time()
 
                     if self.bridgeMode:
-                        #vedo se silence ha qualcosa da inviare allo scooter
+                        # Checking if Silence has to send anything to the scooter
                         dataFromSilence,crashedFlag = self._telegramReceiver(silenceClientSocket, 0.2, 0.2, "S")
                         if crashedFlag == 1:
                             raise Exception("crashed socket")
-                        
-                        elif len(dataFromSilence) > 0:     
+
+                        elif len(dataFromSilence) > 0:
                             for message in dataFromSilence:
                                 data = message["data"]
                                 protocol = message["protocol"]
-                                if data.decode()[:5] == "$RCAN": #non inviare a silence i magheggi che facciamo sul CAN
+                                if data.decode()[:5] == "$RCAN": # Don't send Silence the magic tricks we do on CAN
                                     continue
                                 scooterSocket.send(data)
                                 log.info(f"sent to scooter the data from silence {data}")
@@ -186,12 +187,12 @@ class SilenceServerService(threading.Thread):
                         #else:
                         #    log.info("no data from silence")
 
-                    if self.connectionCount > 1:     #se è stato aperto un nuovo socket chiudo questo thread.
+                    if self.connectionCount > 1:     # If a new socket was opened we close this thread.
                         raise Exception("two connection detected, closing the old one")
 
             except Exception:
                 log.exception ("Exception on listener")
-                
+
                 try:
                     scooterSocket.close()
                 except:
@@ -201,21 +202,21 @@ class SilenceServerService(threading.Thread):
                     silenceClientSocket.close()
                 except:
                     log.error("socket silence server already close")
-                    
+
                 self.connectionCount = self.connectionCount - 1
                 log.info("closing thread, connected clients: "+str(self.connectionCount))
 
-        #-------------------------------------ASCOLTO CONNESSIONE IN ARRIVO---------------------------------------
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   #configurazione socket
-        s.bind(("", self.serverPORT))    #forza ricezione connessioni solo da host
+        #------------------------------------- LISTENING TO INCOMING CONNECTIONS ---------------------------------------
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   #configure socket
+        s.bind(("", self.serverPORT))    # Restrict connections to our host only
         s.settimeout(60)
 
         log.info(f"socket created on port {self.serverPORT}")
-        
-        while (1):  #loop per ricreare socket di ascolto in caso di disconnessione
-            
-            try:    #tentativo per la connessione
-                s.listen()  
+
+        while (1):  # loop to recreate listening socket on disconnect
+
+            try:    # attempting to connect
+                s.listen()
                 log.info("waiting for clients")
                 while (1):
                     try:
@@ -238,7 +239,7 @@ class SilenceServerService(threading.Thread):
         def _messageReceived(messages,data,protocol):
             messages.append({"protocol" : protocol , "data" : data})
             log.info(f"receive data {data}")
-            pub.sendMessage(TOPIC_SOCKET, receiver = receiverName, data=data)            
+            pub.sendMessage(TOPIC_SOCKET, receiver = receiverName, data=data)
 
 
         scooterSocket.settimeout(primoTimeout)
@@ -251,7 +252,7 @@ class SilenceServerService(threading.Thread):
                 protocol = ""
                 byte = scooterSocket.recv(1)
                 data += byte
-                if len(data) == oldDataLen:     #se il bytearray non è incrementato di lunghezza significa che è crashato il socket.
+                if len(data) == oldDataLen:     # If the bytearray has not incremented, the socket has crashed.
                     if firstFrame:
                         if len(data) > 0:
                             _messageReceived(messages,data,protocol)
@@ -287,4 +288,4 @@ class SilenceServerService(threading.Thread):
 
             except Exception:
                 log.exception("_telegramReceiver exception")
-                return messages,1   #se non cè stata eccezione timeout significa che il socket si era bloccato.
+                return messages,1   # If there was no timeout exception, the socket is blocked.

@@ -9,18 +9,19 @@ log = logging.getLogger(LOGGER_NAME)
 
 class MQTTService:
 
-    def __init__(self, configuration, IMEI):
+    def __init__(self, configuration, imei):
         self.broker = configuration["MQTTbroker"]
         self.port = configuration["MQTTport"]
         self.username = configuration["MQTTuser"]
         self.password = configuration["MQTTpass"]
         self.password = configuration["MQTTpass"]
-        self.prefix = configuration["TopicPrefix"] + "/" + IMEI
+        self.prefix = configuration["TopicPrefix"] + "/" + imei
+        self.imei = imei
 
         self.client = mqtt.Client()
 
         self.last_status = {}
-        log.debug("MQTT Service initialized")
+        log.debug(f"MQTT Service initialized for IMEI: {self.imei}")
 
     def build_topic(self, topic):
         return f"{self.prefix}/{topic}"
@@ -52,36 +53,36 @@ class MQTTService:
 
     def start(self):
 
-        log.info(f"Start MQTT Service")
+        log.info(f"Start MQTT Service for IMEI: {self.imei}")
         try:
             self.client.username_pw_set(self.username, self.password)
             self.client.connect(self.broker, self.port, 60)
             self.client.on_connect = self.on_connect
             self.client.on_message = self.on_message
 
-            log.debug(f"Pub/Sub on {TOPIC_SCOOTER_STATUS}")
+            log.debug(f"Pub/Sub on {TOPIC_SCOOTER_STATUS} for IMEI: {self.imei}")
             pub.subscribe(self.publish_scooter_status, TOPIC_SCOOTER_STATUS)
 
-            log.debug(f"Pub/Sub on {TOPIC_COMMAND_RESULT}")
+            log.debug(f"Pub/Sub on {TOPIC_COMMAND_RESULT} for IMEI: {self.imei}")
             pub.subscribe(self.command_result, TOPIC_COMMAND_RESULT)
 
             self.client.loop_start()
-            
+
         except Exception:
             log.exception("Exception in MQTTService start")
             raise Exception("Exception in MQTTService start")
 
     def stop(self):
-        log.info("Stopping MQTT Service")
+        log.info(f"Stopping MQTT Service for IMEI: {self.imei}")
         self.client.loop_stop()
-    
+
     def command_result(self, command, result):
         log.debug(f"Command {command} result {result}")
         self.publish(f"{self.build_topic(MQTT_COMMAND)}/{command}/{MQTT_RESULT}", result)
-        
+
     def publish_scooter_status(self, scooter_status):
-        log.debug(f"Publishing scooter status: {scooter_status}")
-        
+        log.debug(f"Publishing scooter status: {scooter_status} for IMEI: {self.imei}")
+
         for parameter in scooter_status:
             try:
                 if scooter_status[parameter]["value"] != None:

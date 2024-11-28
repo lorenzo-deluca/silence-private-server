@@ -9,14 +9,15 @@ log = logging.getLogger(LOGGER_NAME)
 
 class DBService:
 
-    def __init__(self):
+    def __init__(self, configuration, IMEI):
         super().__init__()
-        log.debug("DBService init")
+        log.debug(f"DBService init ({IMEI})")
         self._running = False
+        self.IMEI = IMEI
 
     def start(self):
-        log.info(f"DBService Start")
-        
+        log.info(f"DBService Start ({self.IMEI})")
+
         try:
             self.DBcon = sqlite3.connect('logs/silenceLOG.db', check_same_thread=False)
             self.cursor = self.DBcon.cursor()
@@ -27,9 +28,9 @@ class DBService:
                                 "message"	BLOB,
                                 PRIMARY KEY("id" AUTOINCREMENT)
                             );''')
-            
+
             self.DBcon.commit()
-            log.debug(f"Subscribing to {TOPIC_SOCKET}")
+            log.debug(f"Subscribing to {TOPIC_SOCKET} ({self.IMEI})")
             pub.subscribe(self.receive_from_socket, TOPIC_SOCKET)
 
         except Exception:
@@ -39,21 +40,21 @@ class DBService:
 
         self._running = True
 
-        # Avvia il thread per mantenere il servizio attivo
+        # Start the thread to keep the service running
         thread = threading.Thread(target=self.run)
         thread.daemon = True
         thread.start()
-    
+
     def stop(self):
         self.DBcon.close()
         self._running = False
-        log.info(f"DBService Stop")
+        log.info(f"DBService Stop for IMEI: {self.IMEI}")
 
     def run(self):
-        # Loop per mantenere il servizio attivo
+        # Loop to keep the service running
         while self._running:
             time.sleep(0.1)
-            
+
     def receive_from_socket(self, receiver, data):
         log.debug(f"Received message from {receiver}: {data}")
         self._scritturaDB(receiver, data)
