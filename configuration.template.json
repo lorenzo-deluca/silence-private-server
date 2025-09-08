@@ -1,8 +1,11 @@
 {
-    "IMEI" : "my_imei",
+    "IMEI_List": [
+        "my_imei-1",
+        "my_imei-2"
+    ],
 
     "TCPServer":{
-        "serverPORT" : 38955,
+        "BasePort" : 38955,
         "bridgeMode" : true,
         "silenceHOST" : "api.connectivity.silence.eco",
         "silencePORT" : 38955,
@@ -12,7 +15,8 @@
     },
     "Logging":{
         "LogToFile": false,
-        "LogLevel": 50
+        "LogLevel": 20,
+        "Timezone": "Europe/Berlin"
     },
     "MQTT": {
         "Enabled" : true,
