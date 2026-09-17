@@ -39,6 +39,13 @@ class MQTTService:
         log.debug(f"MQTT Sub to {self.build_topic(MQTT_COMMAND)}/+")
         client.subscribe(f"{self.build_topic(MQTT_COMMAND)}/+")
 
+    def on_connect_fail(self, client, userdata):
+        log.warning(f"Connection to MQTT broker {self.broker}:{self.port} failed, retrying... (IMEI: {self.imei})")
+
+    def on_disconnect(self, client, userdata, rc):
+        if rc != 0:
+            log.warning(f"Unexpected disconnect from MQTT broker (rc: {rc}), reconnecting... (IMEI: {self.imei})")
+
     def on_message(self, client, userdata, message):
         log.debug(f"Received message '{message.payload.decode()}' on topic '{message.topic}'")
 
@@ -56,9 +63,16 @@ class MQTTService:
         log.info(f"Start MQTT Service for IMEI: {self.imei}")
         try:
             self.client.username_pw_set(self.username, self.password)
-            self.client.connect(self.broker, self.port, 60)
             self.client.on_connect = self.on_connect
+            self.client.on_connect_fail = self.on_connect_fail
+            self.client.on_disconnect = self.on_disconnect
             self.client.on_message = self.on_message
+
+            # Async connect + paho network loop: retries automatically with
+            # backoff if the broker is down at startup or drops later,
+            # so the server never becomes a zombie that ACKs but never publishes
+            self.client.reconnect_delay_set(min_delay=5, max_delay=60)
+            self.client.connect_async(self.broker, self.port, 60)
 
             log.debug(f"Pub/Sub on {TOPIC_SCOOTER_STATUS} for IMEI: {self.imei}")
             pub.subscribe(self.publish_scooter_status, TOPIC_SCOOTER_STATUS)

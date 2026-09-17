@@ -12,7 +12,9 @@ Real raw frames captured from a SEAT Mo 125 with the Astra AT402 v7.0.61.35
 telematics module are used where possible.
 """
 import pytest
+from unittest.mock import patch
 
+import helpers.messageParser as mp
 from helpers.messageParser import MessageParser
 
 
@@ -289,29 +291,134 @@ def test_normal_z_frame_not_touched_by_debundler(parser):
     assert parser.parameters["status"]["value"] == 4
 
 
-@pytest.mark.parametrize("sub_count", [2, 3, 5, 7, 11])
-def test_bundled_frame_extracts_last_subframe(parser, sub_count):
-    # The debundler kicks in for any Z frame whose length is not a known
-    # single-frame size. Real-world captures showed 2-11 sub-records per
-    # frame depending on how much $RCAN polling delayed the comm loop.
-    # sub_count=2 (182 bytes) is the regression case: the old
-    # `len > 200` check missed it and the packet was silently dropped.
-    sub_size = 88
-    total_len = 4 + sub_count * sub_size + 2
+def _bundle(sub_count, status=4, odo=None, sub_size=88, speed=None):
+    """Build a bundled Z frame of `sub_count` records.
 
+    `speed` (byte 63 of a standalone frame -> offset 59 in a sub) lets two
+    bundles with the same status and odometer carry different payloads, so
+    they are not swallowed by the digest dedup before reaching the guard.
+    """
+    total_len = 4 + sub_count * sub_size + 2
     frame = bytearray(total_len)
     frame[0] = 0x5A
     frame[1] = (total_len >> 8) & 0xFF
     frame[2] = total_len & 0xFF
     frame[3] = sub_count
-
-    # All but the last sub have status=3 at offset (82 - 4) = 78.
-    # The last sub — which the debundler must extract — has status=4.
     for i in range(sub_count):
-        frame[4 + i * sub_size + 78] = 3 if i < sub_count - 1 else 4
+        base = 4 + i * sub_size
+        # status lives at byte 82 of a standalone frame -> offset 78 in a sub
+        frame[base + 78] = 3 if i < sub_count - 1 else status
+        if odo is not None:
+            # odo occupies bytes 83-86 of a standalone frame -> 79-82 in a sub
+            frame[base + 79: base + 83] = int(odo).to_bytes(4, "big")
+        if speed is not None:
+            frame[base + 59] = int(speed) & 0xFF
+    return bytes(frame)
 
-    parser.parse_message_from_scooter_protocol_Z(bytes(frame))
+
+@pytest.mark.parametrize("sub_count", [2, 3, 5, 7, 11])
+def test_bundled_frame_with_advancing_odo_keeps_motion(parser, sub_count):
+    # A bundle is a BACKLOG. While the odometer keeps advancing the scooter
+    # really is riding (the module is just late), so the motion state of the
+    # most recent record must be preserved.
+    parser.parse_message_from_scooter_protocol_Z(_bundle(sub_count, odo=16000))
+    parser.parse_message_from_scooter_protocol_Z(_bundle(sub_count, odo=16005))
     assert parser.parameters["status"]["value"] == 4
+
+
+@pytest.mark.parametrize("sub_count", [2, 3, 11])
+def test_bundled_frame_with_frozen_odo_reports_stopped(parser, sub_count, monkeypatch):
+    """Regression test for the 2026-07-26 phantom trips.
+
+    A parked scooter whose module re-sends its pending backlog for hours
+    (odometer frozen) must NOT be reported as riding: each replay used to
+    publish status=4/speed=82 and opened a trip in Home Assistant.
+    """
+    clock = [1000.0]
+    monkeypatch.setattr(mp, "_monotonic", lambda: clock[0])
+    parser.parse_message_from_scooter_protocol_Z(_bundle(sub_count, odo=16681))
+    # same odometer, different payloads -> not caught by the dedup; the
+    # odometer frozen for longer than the grace period proves the readings
+    # are stale (the module alternated between pending bundles all night)
+    clock[0] += 120
+    parser.parse_message_from_scooter_protocol_Z(_bundle(sub_count, status=4, odo=16681, speed=82))
+    assert parser.parameters["status"]["value"] == 4      # still within the grace period
+    clock[0] += mp.FROZEN_ODO_GRACE_SECONDS + 60
+    parser.parse_message_from_scooter_protocol_Z(_bundle(sub_count, status=4, odo=16681, speed=81))
+    assert parser.parameters["status"]["value"] == 0
+    assert parser.parameters["speed"]["value"] == 0
+
+
+def test_frozen_odo_within_grace_keeps_motion(parser, monkeypatch):
+    """Regression test for the 2026-09-14 commute.
+
+    On a degraded link the module bundles everything (974-byte frames every
+    few seconds). At a red light two or three consecutive bundles carry the
+    same 1 km-resolution odometer while the scooter is genuinely riding
+    (status=4 in every sub-record). Forcing status=0 on the first frozen
+    bundle turned every red light into a pause and the trip into
+    '4 km in 2 min at 120 km/h'."""
+    clock = [5000.0]
+    monkeypatch.setattr(mp, "_monotonic", lambda: clock[0])
+    parser.parse_message_from_scooter_protocol_Z(_bundle(11, odo=17219, speed=54))
+    for step, speed in ((6, 30), (3, 0), (40, 0), (60, 12)):   # same km, red light
+        clock[0] += step
+        parser.parse_message_from_scooter_protocol_Z(_bundle(11, status=4, odo=17219, speed=speed))
+        assert parser.parameters["status"]["value"] == 4
+        assert parser.scooter_off is False
+
+
+def test_frozen_clock_resets_when_odo_advances(parser, monkeypatch):
+    clock = [9000.0]
+    monkeypatch.setattr(mp, "_monotonic", lambda: clock[0])
+    parser.parse_message_from_scooter_protocol_Z(_bundle(3, odo=100, speed=40))
+    clock[0] += mp.FROZEN_ODO_GRACE_SECONDS - 30      # frozen, still in grace
+    parser.parse_message_from_scooter_protocol_Z(_bundle(3, status=4, odo=100, speed=41))
+    clock[0] += 10
+    parser.parse_message_from_scooter_protocol_Z(_bundle(3, status=4, odo=101, speed=42))   # advances -> reset
+    clock[0] += mp.FROZEN_ODO_GRACE_SECONDS - 30      # frozen again but the clock restarted
+    parser.parse_message_from_scooter_protocol_Z(_bundle(3, status=4, odo=101, speed=43))
+    assert parser.parameters["status"]["value"] == 4
+
+
+def test_two_record_bundle_is_detected(parser):
+    """182-byte dual-record bundle (upstream v2026.9.9 regression case).
+
+    The old `len > 200` check let it through as a normal frame: the decode
+    config knows no 182-byte layout, so the packet was silently dropped and
+    its kilometres lost. Detection now relies on the table of valid
+    single-frame lengths."""
+    frame = _bundle(2, odo=16000)
+    assert len(frame) == 182
+    parser.parse_message_from_scooter_protocol_Z(frame)
+    parser.parse_message_from_scooter_protocol_Z(_bundle(2, odo=16005))
+    assert parser.parameters["odo"]["value"] == 16005.0
+    assert parser.parameters["status"]["value"] == 4
+
+
+def test_bundled_frame_resent_is_ignored(parser):
+    """The module re-sends an unacknowledged bundle every few minutes."""
+    frame = _bundle(11, odo=16700)
+    parser.parse_message_from_scooter_protocol_Z(frame)
+    calls = []
+    with patch.object(mp.pub, "sendMessage", side_effect=lambda *a, **k: calls.append(k)):
+        parser.parse_message_from_scooter_protocol_Z(frame)
+        parser.parse_message_from_scooter_protocol_Z(frame)
+    assert calls == []
+
+
+def test_malformed_bundle_is_dropped(parser):
+    """Payload not a multiple of the sub-frame size: slicing it would emit
+    values straddling two records (odo=-1, soc=-23 seen in production)."""
+    frame = bytearray(_bundle(11, odo=16000))
+    frame = frame[:-5]                      # truncate: payload no longer 11x88
+    frame[1] = (len(frame) >> 8) & 0xFF
+    frame[2] = len(frame) & 0xFF
+    parser.parameters["odo"]["value"] = 16000.0
+    calls = []
+    with patch.object(mp.pub, "sendMessage", side_effect=lambda *a, **k: calls.append(k)):
+        parser.parse_message_from_scooter_protocol_Z(bytes(frame))
+    assert calls == []
 
 
 def test_bundled_frame_with_sub_count_one_is_not_debundled(parser):
@@ -372,22 +479,15 @@ def test_corrupt_odo_value_is_rejected(parser):
 
     parser.parse_message_from_scooter_protocol_Z(bytes(frame))
 
-    # The corrupt value should have been rejected by the >1_000_000 guard,
-    # meaning the publish was skipped. The internal parameters dict WILL
-    # contain the parsed value (the rejection happens just before publish),
-    # but the side-effect we care about in integration is: no MQTT publish.
-    # Here we assert the guard detected it by checking the value is
-    # either not the garbage (early return) or is flagged somehow.
-    # Since the guard does `return` before publish, the stored value IS
-    # the garbage — but the test proves the branch is reachable. A stronger
-    # test would need a mocked pub.sendMessage; see test below.
-    assert parser.parameters["odo"]["value"] > 1_000_000
+    # The corrupt value is rejected AND the cache is rolled back to the
+    # previous good value, so it can never leak through a later publish
+    # triggered by another frame type.
+    assert parser.parameters["odo"]["value"] == 15026.0
 
 
 def test_corrupt_odo_skips_publish(parser, monkeypatch):
     """Strong version: verify pub.sendMessage is NOT called on corrupt frame."""
     calls = []
-    import helpers.messageParser as mp
     monkeypatch.setattr(mp.pub, "sendMessage", lambda *a, **kw: calls.append((a, kw)))
 
     parser.scooter_off = False
@@ -416,7 +516,6 @@ def test_corrupt_odo_skips_publish(parser, monkeypatch):
 def test_valid_odo_does_publish(parser, monkeypatch):
     """Positive control: a frame with a plausible odo DOES publish."""
     calls = []
-    import helpers.messageParser as mp
     monkeypatch.setattr(mp.pub, "sendMessage", lambda *a, **kw: calls.append((a, kw)))
 
     parser.scooter_off = False
@@ -468,6 +567,42 @@ def test_get_scooter_off_status_getter(parser):
     assert parser.get_scooter_off_status() is True
     parser.scooter_off = False
     assert parser.get_scooter_off_status() is False
+
+
+# ---------------------------------------------------------------------------
+# Ghost-values fix: nothing decoded => nothing republished
+# ---------------------------------------------------------------------------
+
+def _capture_publishes(monkeypatch):
+    calls = []
+    monkeypatch.setattr(mp.pub, "sendMessage", lambda *a, **kw: calls.append(kw))
+    return calls
+
+
+def test_astra_er_frame_does_not_republish_cache(parser, monkeypatch):
+    """$RCAN,ER (CAN bus error) used to republish the ENTIRE stale cache and
+    refresh last-update — the source of 'ghost riding' telemetry while the
+    scooter sat parked with a faulty contactor."""
+    calls = _capture_publishes(monkeypatch)
+    parser.parse_message_from_scooter_protocol_astra(bytearray(b'$RCAN,ER\r\n'))
+    assert calls == []
+
+
+def test_astra_heartbeat_does_not_republish_cache(parser, monkeypatch):
+    calls = _capture_publishes(monkeypatch)
+    parser.parse_message_from_scooter_protocol_astra(
+        bytearray(b'$ASTRA;AT402;860000000000000;;7.0.61.35;Z;0\r\n'))
+    assert calls == []
+
+
+def test_astra_valid_cells_publish_only_decoded_keys(parser, monkeypatch):
+    calls = _capture_publishes(monkeypatch)
+    parser.parse_message_from_scooter_protocol_astra(
+        bytearray(b'$RCAN,185,08,5A,0E,5E,0E,64,0E,62,0E,OK\r\n'))
+    assert len(calls) == 1
+    published = calls[0]["scooter_status"]
+    assert set(published.keys()) == {"Cell1Voltage", "Cell2Voltage", "Cell3Voltage", "Cell4Voltage"}
+    assert published["Cell1Voltage"]["value"] == 0x0E5A
 
 
 # ---------------------------------------------------------------------------
@@ -526,3 +661,29 @@ def test_stms_undecodable_frame_does_not_publish(parser, monkeypatch):
     monkeypatch.setattr(mp.pub, "sendMessage", lambda *a, **kw: calls.append((a, kw)))
     parser.parse_message_from_scooter_protocol_astra(b"$STMS,,\r\n")
     assert calls == []
+
+
+def test_stms_publishes_only_decoded_keys(parser, monkeypatch):
+    """Same contract as $RCAN: no republication of the whole cache."""
+    calls = []
+    monkeypatch.setattr(mp.pub, "sendMessage", lambda *a, **kw: calls.append(kw))
+    parser.parameters["odo"]["value"] = 6345.0
+    parser.parameters["speed"]["value"] = 82
+    parser.parse_message_from_scooter_protocol_astra(STMS_FRAME)
+    assert len(calls) == 1
+    published = calls[0]["scooter_status"]
+    assert "batterySOC" in published and "VIN" in published
+    assert "odo" not in published and "speed" not in published
+
+
+def test_stms_does_not_touch_status(parser, monkeypatch):
+    """Field 1 semantics are unknown (single parked capture = 0): a SYNC
+    requested while riding must not stop the trip in Home Assistant."""
+    calls = []
+    monkeypatch.setattr(mp.pub, "sendMessage", lambda *a, **kw: calls.append(kw))
+    parser.parameters["status"]["value"] = 4
+    parser.scooter_off = False
+    parser.parse_message_from_scooter_protocol_astra(STMS_FRAME)
+    assert parser.parameters["status"]["value"] == 4
+    assert parser.scooter_off is False
+    assert "status" not in calls[0]["scooter_status"]

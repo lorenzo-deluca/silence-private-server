@@ -163,3 +163,7 @@ silenceLOG.db
 configuration.json
 logs/
 .vscode/settings.json
+
+# Local HA sensor dumps used for debugging
+ha_hist.json
+ha_today.json

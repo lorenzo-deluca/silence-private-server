@@ -293,15 +293,10 @@ class SilenceServerService(threading.Thread):
                 oldDataLen = len(data)
                 protocol = ""
                 byte = scooterSocket.recv(1)
+                if not byte:    # recv() returned b'': peer closed the connection (EOF)
+                    log.error(f"socket closed by peer (EOF) on receiver {receiverName}")
+                    return messages,1
                 data += byte
-                if len(data) == oldDataLen:     # If the bytearray has not incremented, the socket has crashed.
-                    if firstFrame:
-                        if len(data) > 0:
-                            _messageReceived(messages,data,protocol)
-                        return messages,0
-                    else:
-                        log.error("crashed socket 2")
-                        raise Exception("crashed socket 2")
 
                 if len(data) > 0 and int(data[-1]) == 36: #message starting with $
                     protocol = "Astra"
@@ -311,8 +306,11 @@ class SilenceServerService(threading.Thread):
                     _messageReceived(messages,data,"ACK")
                     continue
                 scooterSocket.settimeout(secondoTimeout)
-                while 1: 
+                while 1:
                     byte = scooterSocket.recv(1)
+                    if not byte:    # recv() returned b'': peer closed mid-frame (EOF)
+                        log.error(f"socket closed by peer (EOF) mid-frame on receiver {receiverName}")
+                        return messages,1
                     data += byte
                     if protocol == "Astra" and int(data[-1]) == 10 and int(data[-2]) == 13: #check for end of message started with $
                         _messageReceived(messages,data,protocol)
@@ -323,10 +321,31 @@ class SilenceServerService(threading.Thread):
 
                     oldDataLen = len(data)
 
-            except (socket.timeout, ConnectionError, TimeoutError) as e:
+            except socket.timeout:
                 if len(data) > 0:
-                    _messageReceived(messages,data,protocol)
+                    if protocol == "Astra" and len(data) >= 2 and int(data[-1]) == 10 and int(data[-2]) == 13:
+                        # Trame Astra complète arrivée pile au timeout
+                        _messageReceived(messages,data,protocol)
+                    elif receiverName != "A":
+                        # Côté Silence officiel (bridge) : comportement historique
+                        _messageReceived(messages,data,protocol)
+                    else:
+                        # Trame incomplète (coupure GSM / bus CAN en vrac) ou
+                        # octets hors protocole (scanners Internet sur le port
+                        # exposé) : on ne transmet RIEN au parseur ni à la base
+                        # — les trames tronquées produisaient des valeurs
+                        # aberrantes (odo à 980M via split() désaligné) et le
+                        # junk des scanners polluait le cache et la DB.
+                        log.warning(f"dropping invalid/incomplete telegram ({len(data)} bytes, protocol='{protocol or 'none'}') on receiver {receiverName}")
+                        if not messages:
+                            # Round sans AUCUN message valide : connexion
+                            # étrangère (scanner) -> on la ferme immédiatement.
+                            return messages,1
                 return messages,0
+
+            except OSError as e:    # ConnectionResetError, broken pipe, closed socket, ...
+                log.error(f"socket error on receiver {receiverName}: {e}")
+                return messages,1
 
             except Exception:
                 log.exception("_telegramReceiver exception")
